@@ -25,6 +25,28 @@ def get_all_paths(folder_path):
     
 
 
+def print_min_max(image_linear, idx):
+
+        h, w, ch = image_linear.shape
+
+        min_value = np.ones(ch, dtype = np.float32)
+        max_value = np.zeros(ch, dtype = np.float32)
+
+        for r in range(h):
+            for c in range(w):
+                for x in range(ch):
+                    if image_linear[r, c, x] > max_value[x]:
+                        max_value[x] = image_linear[r, c, x]
+                    if image_linear[r, c, x] < min_value[x]:
+                        min_value[x] = image_linear[r, c, x]
+
+        print("image ", idx)
+        print("min_R = ", min_value[0], " max_R = ", max_value[0])
+        print("min_G = ", min_value[1], " max_G = ", max_value[1])
+        print("min_B = ", min_value[2], " max_B = ", max_value[2])
+
+
+
 def rgb2rgby():
 
     assert len(sys.argv) == 3, "python rgb2rgby.py input/ output/"
@@ -40,11 +62,16 @@ def rgb2rgby():
 
     for idx, file_path in enumerate(file_paths, 100):
 
+        if idx % 10000 == 0:
+            print(idx)
+
         rgb = cv2.imread(file_path, -1)[:, :, ::-1].astype(np.float32) # convert BGR to RGB(h,w,c)
         rgb = np.clip(rgb / 255, 1e-8, 1)
         rgb_linear = np.power(rgb, 2.2)
         
-        h, w, _ = rgb_linear.shape
+        #print_min_max(rgb_linear, idx)
+
+        h, w, ch = rgb_linear.shape
 
         rgby_linear = np.zeros((h, w, 4), dtype = np.float32)
 
@@ -56,6 +83,7 @@ def rgb2rgby():
         rgby_linear = np.clip(rgby_linear, 1e-8 ,1)
 
         np.save(output_path + "/" + str(idx) + ".png", rgby_linear, allow_pickle=True)
+        
 
 
 if __name__ == "__main__":
